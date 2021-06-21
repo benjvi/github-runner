@@ -16,14 +16,14 @@ spec:
     spec:
       containers:
       - name: github-runner
-        image: sanderknape/github-runner:latest
+        image: benjvi/github-runner-arm:latest
         env:
         - name: GITHUB_OWNER
-          value: your-organization
+          value: benjvi
         - name: GITHUB_REPOSITORY
-          value: your-repository
+          value: rpi-k8s
         - name: GITHUB_PAT # stored separately in a Kubernetes secret
           valueFrom:
             secretKeyRef:
-              name: my-secret
+              name: gh-runner-pat
               key: pat

@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM --platform=$TARGETPLATFORM debian:buster-slim
 
 ENV GITHUB_PAT ""
 ENV GITHUB_TOKEN ""
@@ -10,11 +10,22 @@ ENV ADDITIONAL_PACKAGES ""
 
 RUN apt-get update \
     && apt-get install -y \
+        apt-transport-https \
+        ca-certificates \
+        gnupg-agent \
+        software-properties-common \
         curl \
         sudo \
         git \
         jq \
         iputils-ping \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
+    && add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/debian buster stable" \
+    && apt-get update \
+    && apt-get install docker-ce-cli \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -m github \
@@ -25,7 +36,7 @@ USER github
 WORKDIR /home/github
 
 RUN GITHUB_RUNNER_VERSION=$(curl --silent "https://api.github.com/repos/actions/runner/releases/latest" | jq -r '.tag_name[1:]') \
-    && curl -Ls https://github.com/actions/runner/releases/download/v${GITHUB_RUNNER_VERSION}/actions-runner-linux-x64-${GITHUB_RUNNER_VERSION}.tar.gz | tar xz \
+    && curl -Ls https://github.com/actions/runner/releases/download/v${GITHUB_RUNNER_VERSION}/actions-runner-linux-arm64-${GITHUB_RUNNER_VERSION}.tar.gz | tar xz \
     && sudo ./bin/installdependencies.sh
 
 COPY --chown=github:github entrypoint.sh runsvc.sh ./
